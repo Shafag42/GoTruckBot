@@ -21,10 +21,7 @@ dp = Dispatcher(bot)
 
 
 async def start_command(message: types.Message):
-    if "GoTruckBot" in message.text:
-        await message.answer("Salamlar. Bota xoş gəlmisiniz! Bu mavi sözə -> /orders toxunaraq ən son sifarişi görə bilərsiniz.")
-    else:
-        await message.answer("Üzr istəyirik, bu bot qrupunuzun üzvü deyil.")
+    await message.answer("Salamlar. Bota xoş gəlmisiniz! Buna mavi sözə /orders toxunaraq ən son sifarişi görə bilərsiniz.")
 
 
 
@@ -65,7 +62,7 @@ async def orders_command():
        
         if order_data:
             # Get the latest order
-            latest_order = order_data[0]
+            latest_order = order_data[-1]
             latest_order_id = latest_order.get('_id')
 
             # If the latest order is different from the last sent order
@@ -73,14 +70,17 @@ async def orders_command():
                 last_order_id = latest_order_id
 
                 # Extract order information
-                location = latest_order.get('route', 'N/A')
+                origin = latest_order.get('origin', 'N/A')
+                destination = latest_order.get('destination', 'N/A')
+                trucktype = latest_order.get('trucktype', 'N/A')
                 minprice = latest_order.get('minpayment', 'N/A')
                 maxprice = latest_order.get('maxpayment', 'N/A')
                 phone = latest_order.get('number', 'N/A')
 
                 # Compose the message
-                message_text = f"Bəylər, yeni sifariş var:\nHaradan-haraya: {location}\nMinimum qiymət: {minprice}\nMaksimum qiymət: {maxprice}\nƏlaqə nömrəsi: {phone}"
+                message_text = f"Bəylər, yeni sifariş var:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Yükün növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}"
 
+                
                 group_id = await get_group_id()
                 await bot.send_message(group_id, message_text)
 
@@ -90,13 +90,16 @@ async def check_orders(message: types.Message):
     order_data = await get_order_data()
 
     if order_data:
-        latest_order = order_data[0]
-        location = latest_order.get('route', 'N/A')
+        latest_order = order_data[-1]
+        origin = latest_order.get('origin', 'N/A')
+        destination = latest_order.get('destination', 'N/A')
+        trucktype = latest_order.get('trucktype', 'N/A')
         minprice = latest_order.get('minpayment', 'N/A')
         maxprice = latest_order.get('maxpayment', 'N/A')
         phone = latest_order.get('number', 'N/A')
 
-        await message.answer(f"Son sifariş:\nHaradan-->haraya: {location}\nMinimum qiymət: {minprice}\nMaksimum qiymət: {maxprice}\nƏlaqə nömrəsi: {phone}")
+        await message.answer(f"Son sifariş:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Yükün növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}")
+
     else:
         await message.answer("Hələki yeni sifariş yoxdur.Təşəkkürlər.")
 
