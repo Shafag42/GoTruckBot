@@ -5,7 +5,7 @@ FROM python:3.11
 WORKDIR /Telegram Bot
 
 # Copy the necessary files into the container
-COPY telegram_bot.py .
+COPY GoTruck_bot.py .
 COPY requirements.txt .
 COPY .env .
 
@@ -13,4 +13,4 @@ COPY .env .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the bot
-CMD [ "python", "telegram_bot.py" ]
+CMD [ "python", "GoTruck_bot.py" ]

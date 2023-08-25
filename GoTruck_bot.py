@@ -21,7 +21,7 @@ dp = Dispatcher(bot)
 
 
 async def start_command(message: types.Message):
-    await message.answer("Salamlar. Bota xoş gəlmisiniz! Buna mavi sözə /orders toxunaraq ən son sifarişi görə bilərsiniz.")
+    await message.answer("Salamlar. Bota xoş gəlmisiniz! Buradaki mavi sözə /orders toxunaraq ən son sifarişi görə bilərsiniz.")
 
 
 
@@ -34,7 +34,8 @@ async def get_order_data():
     orders_collection = db['orders']
 
     # Fetch all documents using a cursor asynchronously
-    cursor = orders_collection.find({}, {'_id': 0})
+    # cursor = orders_collection.find({}, {'_id': 0})
+    cursor = orders_collection.find({})
     order_data = []
     async for document in cursor:
         order_data.append(document)
@@ -78,11 +79,13 @@ async def orders_command():
                 phone = latest_order.get('number', 'N/A')
 
                 # Compose the message
-                message_text = f"Bəylər, yeni sifariş var:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Yükün növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}"
+                message_text = f"Bəylər, yeni sifariş var:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Qoşqunun növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}"
 
                 
                 group_id = await get_group_id()
                 await bot.send_message(group_id, message_text)
+
+
 
 
 async def check_orders(message: types.Message):
@@ -98,7 +101,7 @@ async def check_orders(message: types.Message):
         maxprice = latest_order.get('maxpayment', 'N/A')
         phone = latest_order.get('number', 'N/A')
 
-        await message.answer(f"Son sifariş:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Yükün növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}")
+        await message.answer(f"Son sifariş:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Qoşqunun növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}")
 
     else:
         await message.answer("Hələki yeni sifariş yoxdur.Təşəkkürlər.")
@@ -108,6 +111,7 @@ async def main():
     # Add the command handlers
     dp.register_message_handler(start_command, commands=["start"])
     dp.register_message_handler(check_orders, commands=["orders"])
+    
 
     # Start the background task to check for new orders and send messages to the group
     asyncio.create_task(orders_command())
