@@ -8,7 +8,7 @@ import motor.motor_asyncio
 from aiogram import types
 
 # Load environment variables from .env file
-load_dotenv() 
+load_dotenv()
 
 # Telegram Bot API Token
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -18,11 +18,6 @@ bot = Bot(token=TELEGRAM_TOKEN)
 
 # Initialize the Dispatcher
 dp = Dispatcher(bot)
-
-
-async def start_command(message: types.Message):
-    await message.answer("Salamlar. Bota xoş gəlmisiniz! Buradaki mavi sözə /orders toxunaraq ən son sifarişi görə bilərsiniz.")
-
 
 
 async def get_order_data():
@@ -44,7 +39,7 @@ async def get_order_data():
 
 
 async def get_group_id():
-    group_username = "GoTruckTest"  #your group username
+    group_username = "GoTruckTest"
 
     # Get the group info using the group username
     invite_link_info = await bot.get_chat("@" + group_username)
@@ -54,13 +49,20 @@ async def get_group_id():
     return group_id
 
 
+async def start_command():
+    message_text = "Salamlar. Bota xoş gəlmisiniz! Buradaki mavi sözə /orders toxunaraq ən son sifarişi görə bilərsiniz."
+
+    group_id = await get_group_id()
+    await bot.send_message(group_id, message_text)
+
+
 async def orders_command():
     last_order_id = None  # Initial value, no orders sent yet
 
     while True:
         # Check for new orders
         order_data = await get_order_data()
-       
+
         if order_data:
             # Get the latest order
             latest_order = order_data[-1]
@@ -81,14 +83,11 @@ async def orders_command():
                 # Compose the message
                 message_text = f"Bəylər, yeni sifariş var:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Qoşqunun növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}"
 
-                
                 group_id = await get_group_id()
                 await bot.send_message(group_id, message_text)
 
 
-
-
-async def check_orders(message: types.Message):
+async def check_orders():
     # Check for new orders when a user calls /orders command
     order_data = await get_order_data()
 
@@ -101,17 +100,23 @@ async def check_orders(message: types.Message):
         maxprice = latest_order.get('maxpayment', 'N/A')
         phone = latest_order.get('number', 'N/A')
 
-        await message.answer(f"Son sifariş:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Qoşqunun növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}")
+        message_text = f"Son sifariş:\n🗺 Götürüləcək ünvan:{origin}\n🚍 Çatdırılacaq ünvan: {destination}\n🚛 Qoşqunun növü: {trucktype}\n💰 Minimum qiymət: {minprice}\n💰 Maksimum qiymət: {maxprice}\n📞 Əlaqə nömrəsi: {phone}"
+
+        group_id = await get_group_id()
+        await bot.send_message(group_id, message_text)
 
     else:
-        await message.answer("Hələki yeni sifariş yoxdur.Təşəkkürlər.")
+
+        message_text = "Hələki yeni sifariş yoxdur.Təşəkkürlər."
+
+        group_id = await get_group_id()
+        await bot.send_message(group_id, message_text)
 
 
 async def main():
     # Add the command handlers
     dp.register_message_handler(start_command, commands=["start"])
     dp.register_message_handler(check_orders, commands=["orders"])
-    
 
     # Start the background task to check for new orders and send messages to the group
     asyncio.create_task(orders_command())
